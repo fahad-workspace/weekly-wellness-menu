@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Weekly Wellness Menu</title>
+    <link rel="icon"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23007AFF'/%3E%3Cpath d='M14 4v8h4V4h1v8.5c0 1.5-1 2.5-2.5 2.5h-1c-1.5 0-2.5-1-2.5-2.5V4h1z' fill='white'/%3E%3Crect x='15' y='15' width='2' height='13' rx='1' fill='white'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23007AFF'/%3E%3Cpath d='M78.75 22.5v45h22.5V22.5h5.625v47.8125c0 8.4375-5.625 14.0625-14.0625 14.0625h-5.625c-8.4375 0-14.0625-5.625-14.0625-14.0625V22.5h5.625z' fill='white'/%3E%3Crect x='84.375' y='84.375' width='11.25' height='73.125' rx='5.625' fill='white'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@200;300;400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap');
+        
+        :root {
+            --system-red: #FF3B30;
+            --system-orange: #FF9500;
+            --system-yellow: #FFCC00;
+            --system-green: #34C759;
+            --system-teal: #5AC8FA;
+            --system-blue: #007AFF;
+            --system-indigo: #5856D6;
+            --system-purple: #AF52DE;
+            --system-pink: #FF2D55;
+            
+            --primary: #007AFF;
+            --primary-dark: #0051D5;
+            --surface: rgba(28, 28, 30, 0.98);
+            --surface-elevated: #1C1C1E;
+            --surface-secondary: rgba(44, 44, 46, 0.6);
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(235, 235, 245, 0.6);
+            --text-tertiary: rgba(235, 235, 245, 0.3);
+            --separator: rgba(84, 84, 88, 0.65);
+            
+            --backdrop-blur: saturate(180%) blur(20px);
+            --spring-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --spring-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+            
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+            line-height: 1.47059;
+            letter-spacing: -0.022em;
+            color: var(--text-primary);
+            background: #000000;
+            min-height: 100vh;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+        
+        /* Loading State */
+        .loader-container {
+            position: fixed;
+            inset: 0;
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.6s var(--ease-out-expo);
+        }
+        
+        .loader-container.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loader-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            opacity: 0;
+            animation: breathe 2s ease-in-out infinite, fadeIn 0.6s ease forwards;
+        }
+        
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .loader-progress {
+            width: 200px;
+            height: 4px;
+            background: var(--surface-secondary);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .loader-progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 2px;
+            width: 0%;
+            animation: loadProgress 1.5s ease-out forwards;
+        }
+        
+        @keyframes loadProgress {
+            to { width: 100%; }
+        }
+        
+        /* Navigation Bar */
+        .nav-container {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--surface);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+            border-bottom: 0.5px solid var(--separator);
+            padding-top: var(--safe-area-inset-top);
+        }
+        
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .nav-title {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.4px;
+        }
+        
+        .nav-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .nav-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s var(--spring-smooth);
+            position: relative;
+        }
+        
+        .nav-button:hover {
+            background: var(--surface-secondary);
+            transform: scale(1.1);
+        }
+        
+        .nav-button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            padding-bottom: calc(20px + var(--safe-area-inset-bottom));
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: var(--surface-elevated);
+            border-radius: 16px;
+            padding: 48px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: slideUp 0.8s var(--ease-out-expo) 0.2s forwards;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero-gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, 
+                rgba(0, 122, 255, 0.1) 0%, 
+                rgba(175, 82, 222, 0.1) 100%);
+            opacity: 0.5;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--system-green);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--system-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subtitle {
+            font-size: 20px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+        
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            padding: 4px;
+            background: var(--surface-secondary);
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            opacity: 0;
+            animation: slideUp 0.8s var(--ease-out-expo) 0.4s forwards;
+        }
+        
+        .tab-nav::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab-button {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s var(--spring-smooth);
+            scroll-snap-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            position: relative;
+        }
+        
+        .tab-button:hover {
+            color: var(--text-primary);
+        }
+        
+        .tab-button.active {
+            background: var(--surface-elevated);
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 1.5px;
+            animation: slideIn 0.3s var(--spring-bounce);
+        }
+        
+        @keyframes slideIn {
+            from {
+                width: 0;
+                opacity: 0;
+            }
+            to {
+                width: 24px;
+                opacity: 1;
+            }
+        }
+        
+        .tab-day {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            font-weight: 400;
+        }
+        
+        /* Content Cards */
+        .card {
+            background: var(--surface-elevated);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            opacity: 0;
+            animation: slideUp 0.8s var(--ease-out-expo) forwards;
+            animation-delay: calc(var(--delay) * 0.1s);
+            transition: all 0.3s var(--spring-smooth);
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--separator);
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .card-title {
+            flex: 1;
+        }
+        
+        .card-title h3 {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.4px;
+            margin-bottom: 2px;
+        }
+        
+        .card-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        /* Meal Table */
+        .meal-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .meal-table th {
+            text-align: left;
+            padding: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-tertiary);
+            border-bottom: 1px solid var(--separator);
+        }
+        
+        .meal-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--separator);
+            vertical-align: top;
+        }
+        
+        .meal-table tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        .meal-table tbody tr:hover {
+            background: var(--surface-secondary);
+        }
+        
+        .meal-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            background: var(--primary);
+            color: white;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .meal-type-badge {
+            display: inline-flex;
+            padding: 4px 8px;
+            background: var(--surface-secondary);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .meal-type-badge.primary {
+            background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(175, 82, 222, 0.1));
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        /* Floating Action Button */
+        .fab-container {
+            position: fixed;
+            bottom: calc(24px + var(--safe-area-inset-bottom));
+            right: 24px;
+            z-index: 900;
+        }
+        
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s var(--spring-bounce);
+            animation: fabEntry 0.6s var(--spring-bounce) 1s backwards;
+        }
+        
+        @keyframes fabEntry {
+            from {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) rotate(0);
+                opacity: 1;
+            }
+        }
+        
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+        }
+        
+        .fab:active {
+            transform: scale(0.95);
+        }
+        
+        /* Search Interface */
+        .search-container {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .search-container.active {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 100px;
+            opacity: 1;
+        }
+        
+        .search-modal {
+            width: 90%;
+            max-width: 600px;
+            background: var(--surface-elevated);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s var(--spring-bounce);
+        }
+        
+        .search-container.active .search-modal {
+            transform: scale(1);
+        }
+        
+        .search-input-container {
+            padding: 16px;
+            border-bottom: 1px solid var(--separator);
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--surface-secondary);
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        
+        .search-input:focus {
+            background: var(--surface);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .search-results {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        
+        .search-result-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .search-result-item:hover {
+            background: var(--surface-secondary);
+        }
+        
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        /* Focus styles */
+        *:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .nav-container,
+            .fab-container,
+            .search-container {
+                display: none !important;
+            }
+            
+            .container {
+                max-width: 100%;
+            }
+            
+            .card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 32px 24px;
+            }
+            
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            .meal-table {
+                font-size: 14px;
+            }
+            
+            .meal-table th,
+            .meal-table td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Loading State -->
+<div class="loader-container" id="loader">
+    <div class="loader-logo">
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="80" height="80" rx="18" fill="url(#gradient)"/>
+            <path d="M40 20 L50 35 L40 50 L30 35 Z" fill="white" opacity="0.9"/>
+            <defs>
+                <linearGradient id="gradient" x1="0" y1="0" x2="80" y2="80">
+                    <stop offset="0" stop-color="#007AFF"/>
+                    <stop offset="1" stop-color="#AF52DE"/>
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+    <div class="loader-progress">
+        <div class="loader-progress-bar"></div>
+    </div>
+</div>
+
+<!-- Navigation -->
+<nav class="nav-container">
+    <div class="nav-content">
+        <div class="nav-title">Weekly Wellness Menu</div>
+        <div class="nav-actions">
+            <button class="nav-button" onclick="toggleSearch()" aria-label="Search">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-gradient"></div>
+        <div class="hero-content">
+            <h1>Weekly Wellness Menu</h1>
+            <p class="hero-subtitle">Balanced nutrition for optimal health and wellness</p>
+        </div>
+    </section>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav" role="tablist">
+        <button class="tab-button active" role="tab" aria-selected="true" aria-controls="day-1" onclick="showDay(1)">
+            Monday
+            <span class="tab-day">Day 1</span>
+        </button>
+        <button class="tab-button" role="tab" aria-selected="false" aria-controls="day-2" onclick="showDay(2)">
+            Tuesday
+            <span class="tab-day">Day 2</span>
+        </button>
+        <button class="tab-button" role="tab" aria-selected="false" aria-controls="day-3" onclick="showDay(3)">
+            Wednesday
+            <span class="tab-day">Day 3</span>
+        </button>
+        <button class="tab-button" role="tab" aria-selected="false" aria-controls="day-4" onclick="showDay(4)">
+            Thursday
+            <span class="tab-day">Day 4</span>
+        </button>
+        <button class="tab-button" role="tab" aria-selected="false" aria-controls="day-5" onclick="showDay(5)">
+            Friday
+            <span class="tab-day">Day 5</span>
+        </button>
+        <button class="tab-button" role="tab" aria-selected="false" aria-controls="day-6" onclick="showDay(6)">
+            Saturday
+            <span class="tab-day">Day 6</span>
+        </button>
+        <button class="tab-button" role="tab" aria-selected="false" aria-controls="day-7" onclick="showDay(7)">
+            Sunday
+            <span class="tab-day">Day 7</span>
+        </button>
+    </div>
+
+    <!-- Day Content -->
+    <div id="day-content">
+        <!-- Daily Meal Plan Table - First -->
+        <article class="card" style="--delay: 1">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <i class="fas fa-calendar-day" style="color: white;"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Monday Menu</h3>
+                    <p class="card-subtitle">Complete daily nutrition schedule</p>
+                </div>
+            </div>
+
+            <table class="meal-table">
+                <thead>
+                <tr>
+                    <th style="width: 15%">Time</th>
+                    <th style="width: 20%">Meal</th>
+                    <th style="width: 45%">Menu</th>
+                    <th style="width: 20%">Notes</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><span class="time-badge"><i class="fas fa-clock"></i> 8:30 AM</span></td>
+                    <td><span class="meal-type-badge">Early Morning</span></td>
+                    <td>Warm jeera-dhania water</td>
+                    <td>Metabolism boost</td>
+                </tr>
+                <tr>
+                    <td><span class="time-badge"><i class="fas fa-clock"></i> 10:00 AM</span></td>
+                    <td><span class="meal-type-badge primary">Breakfast</span></td>
+                    <td>
+                        <strong>Main:</strong> Aloo Paratha (1.5) with Plain dahi<br>
+                        <strong>Beverage:</strong> Indian tea (less sugar)
+                    </td>
+                    <td>Use minimal oil</td>
+                </tr>
+                <tr>
+                    <td><span class="time-badge"><i class="fas fa-clock"></i> 12:30 PM</span></td>
+                    <td><span class="meal-type-badge">Mid-day Snack</span></td>
+                    <td>
+                        <strong>Nuts:</strong> Soaked almonds (5) + walnuts (2-3)<br>
+                        <strong>Fruit:</strong> Seasonal choice
+                    </td>
+                    <td>Heart & brain health</td>
+                </tr>
+                <tr>
+                    <td><span class="time-badge"><i class="fas fa-clock"></i> 2:30 PM</span></td>
+                    <td><span class="meal-type-badge primary">Lunch</span></td>
+                    <td>
+                        <strong>Dal:</strong> Arhar dal<br>
+                        <strong>Vegetable:</strong> Lauki-chana dal OR Bhindi<br>
+                        <strong>Carb:</strong> Roti (2) OR Rice (0.5 cup)<br>
+                        <strong>Salad:</strong> Large kachumber (1.5 cups)
+                    </td>
+                    <td>Dahi + green chutney</td>
+                </tr>
+                <tr>
+                    <td><span class="time-badge"><i class="fas fa-clock"></i> 6:15 PM</span></td>
+                    <td><span class="meal-type-badge">Evening</span></td>
+                    <td>
+                        <strong>Snack:</strong> Roasted chana (handful)<br>
+                        <strong>Beverage:</strong> Indian tea
+                    </td>
+                    <td>Healthy protein</td>
+                </tr>
+                <tr>
+                    <td><span class="time-badge"><i class="fas fa-clock"></i> 9:00 PM</span></td>
+                    <td><span class="meal-type-badge primary">Dinner</span></td>
+                    <td>
+                        <strong>Option 1:</strong> Moong dal + Palak sabzi + Roti (2)<br>
+                        <strong>Option 2:</strong> Chana dal + Tori + Roti (2)<br>
+                        <strong>Salad:</strong> Light cucumber salad
+                    </td>
+                    <td>No rice at dinner</td>
+                </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <!-- Meal Structure Cards -->
+        <article class="card" style="--delay: 2">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #FF9500, #FF6200);">
+                    <i class="fas fa-utensils" style="color: white;"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Every BREAKFAST Includes</h3>
+                    <p class="card-subtitle">Complete morning nutrition structure</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(255, 149, 0, 0.05), rgba(255, 149, 0, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-orange);">
+                    <strong style="color: var(--system-orange); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Main</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">Paratha/Poha/Upma/Idli</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(52, 199, 89, 0.05), rgba(52, 199, 89, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-green);">
+                    <strong style="color: var(--system-green); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Protein</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">Dahi/Milk/Egg</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(0, 122, 255, 0.05), rgba(0, 122, 255, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-blue);">
+                    <strong style="color: var(--system-blue); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Beverage</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">Indian tea (less sugar)</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(175, 82, 222, 0.05), rgba(175, 82, 222, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-purple);">
+                    <strong style="color: var(--system-purple); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Portion</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">1.5 parathas max</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(255, 45, 85, 0.05), rgba(255, 45, 85, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-pink);">
+                    <strong style="color: var(--system-pink); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Oil</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">Minimal use</p>
+                </div>
+            </div>
+        </article>
+
+        <article class="card" style="--delay: 3">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #5AC8FA, #0A7AFF);">
+                    <i class="fas fa-sun" style="color: white;"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Every LUNCH Includes</h3>
+                    <p class="card-subtitle">Balanced midday meal components</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(90, 200, 250, 0.05), rgba(90, 200, 250, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-teal);">
+                    <strong style="color: var(--system-teal); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Dal</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">1 serving (protein base)</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(52, 199, 89, 0.05), rgba(52, 199, 89, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-green);">
+                    <strong style="color: var(--system-green); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Vegetable</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">1 - Choose from options</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(255, 204, 0, 0.05), rgba(255, 204, 0, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-yellow);">
+                    <strong style="color: #C7A000; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Salad</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">Large (1.5 cups min)</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(255, 149, 0, 0.05), rgba(255, 149, 0, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-orange);">
+                    <strong style="color: var(--system-orange); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Carbs</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">Roti (2) OR Rice (0.5 cup)</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(0, 122, 255, 0.05), rgba(0, 122, 255, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-blue);">
+                    <strong style="color: var(--system-blue); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Dairy</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">Dahi/Raita (probiotics)</p>
+                </div>
+            </div>
+        </article>
+
+        <article class="card" style="--delay: 4">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #5856D6, #AF52DE);">
+                    <i class="fas fa-moon" style="color: white;"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Every DINNER Includes</h3>
+                    <p class="card-subtitle">Light evening meal structure</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(88, 86, 214, 0.05), rgba(88, 86, 214, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-indigo);">
+                    <strong style="color: var(--system-indigo); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Protein</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">1 Dal OR Non-veg</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(52, 199, 89, 0.05), rgba(52, 199, 89, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-green);">
+                    <strong style="color: var(--system-green); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Vegetable</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">1 (if dal chosen)</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(255, 59, 48, 0.05), rgba(255, 59, 48, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-red);">
+                    <strong style="color: var(--system-red); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Carbs</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary); font-weight: 600;">ROTI ONLY (2 max)</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(255, 204, 0, 0.05), rgba(255, 204, 0, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-yellow);">
+                    <strong style="color: #C7A000; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Salad</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">Large serving</p>
+                </div>
+                <div style="padding: 12px; background: linear-gradient(135deg, rgba(0, 122, 255, 0.05), rgba(0, 122, 255, 0.1)); border-radius: 10px; border-left: 3px solid var(--system-blue);">
+                    <strong style="color: var(--system-blue); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Dairy</strong>
+                    <p style="margin: 4px 0; color: var(--text-primary);">Dahi/Chaach (seasonal)</p>
+                </div>
+            </div>
+        </article>
+
+        <!-- Seasonal Guidelines -->
+        <article class="card" style="--delay: 5">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #34C759, #30D158);">
+                    <i class="fas fa-leaf" style="color: white;"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Seasonal Guidelines</h3>
+                    <p class="card-subtitle">Adapt your meals to the season</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                <div style="padding: 16px; background: linear-gradient(135deg, rgba(255, 204, 0, 0.05), rgba(255, 149, 0, 0.05)); border-radius: 12px; border: 1px solid rgba(255, 204, 0, 0.2);">
+                    <h4 style="font-size: 16px; margin-bottom: 12px; color: var(--system-orange); display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-sun"></i> Summer Adaptations
+                    </h4>
+                    <div style="margin-bottom: 12px;">
+                        <strong style="color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Salad</strong>
+                        <p style="margin: 4px 0;">Cucumber, mint leaves</p>
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Dairy</strong>
+                        <p style="margin: 4px 0;">Chaach/Mattha daily</p>
+                    </div>
+                </div>
+
+                <div style="padding: 16px; background: linear-gradient(135deg, rgba(90, 200, 250, 0.05), rgba(0, 122, 255, 0.05)); border-radius: 12px; border: 1px solid rgba(90, 200, 250, 0.2);">
+                    <h4 style="font-size: 16px; margin-bottom: 12px; color: var(--system-blue); display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-snowflake"></i> Winter Adaptations
+                    </h4>
+                    <div style="margin-bottom: 12px;">
+                        <strong style="color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Salad</strong>
+                        <p style="margin: 4px 0;">Radish, carrot, beetroot</p>
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Dairy</strong>
+                        <p style="margin: 4px 0;">Room temp dahi</p>
+                    </div>
+                </div>
+
+                <div style="padding: 16px; background: linear-gradient(135deg, rgba(52, 199, 89, 0.05), rgba(52, 199, 89, 0.1)); border-radius: 12px; border: 1px solid rgba(52, 199, 89, 0.2);">
+                    <h4 style="font-size: 16px; margin-bottom: 12px; color: var(--system-green); display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-cloud-rain"></i> Monsoon Adaptations
+                    </h4>
+                    <div style="margin-bottom: 12px;">
+                        <strong style="color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Salad</strong>
+                        <p style="margin: 4px 0;">Onion, tomato, cucumber</p>
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Dairy</strong>
+                        <p style="margin: 4px 0;">Minimal cold items</p>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Portion Control -->
+        <article class="card" style="--delay: 6">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #FF3B30, #FF6961);">
+                    <i class="fas fa-balance-scale" style="color: white;"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Portion Control Guidelines</h3>
+                    <p class="card-subtitle">Exact serving sizes for optimal health</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+                <div style="text-align: center; padding: 16px; background: var(--surface-secondary); border-radius: 12px; transition: all 0.3s ease;">
+                    <i class="fas fa-bread-slice"
+                       style="font-size: 24px; color: var(--system-orange); margin-bottom: 8px;"></i>
+                    <strong style="display: block; font-size: 14px; margin-bottom: 4px;">Roti</strong>
+                    <span style="color: var(--text-secondary); font-size: 13px;">Max 2 per meal</span>
+                </div>
+                <div style="text-align: center; padding: 16px; background: var(--surface-secondary); border-radius: 12px;">
+                    <i class="fas fa-bowl-rice"
+                       style="font-size: 24px; color: var(--system-yellow); margin-bottom: 8px;"></i>
+                    <strong style="display: block; font-size: 14px; margin-bottom: 4px;">Rice</strong>
+                    <span style="color: var(--text-secondary); font-size: 13px;">0.5 cup cooked</span>
+                </div>
+                <div style="text-align: center; padding: 16px; background: var(--surface-secondary); border-radius: 12px;">
+                    <i class="fas fa-mortar-pestle"
+                       style="font-size: 24px; color: var(--system-green); margin-bottom: 8px;"></i>
+                    <strong style="display: block; font-size: 14px; margin-bottom: 4px;">Dal</strong>
+                    <span style="color: var(--text-secondary); font-size: 13px;">0.75-1 cup</span>
+                </div>
+                <div style="text-align: center; padding: 16px; background: var(--surface-secondary); border-radius: 12px;">
+                    <i class="fas fa-fish" style="font-size: 24px; color: var(--system-blue); margin-bottom: 8px;"></i>
+                    <strong style="display: block; font-size: 14px; margin-bottom: 4px;">Non-veg</strong>
+                    <span style="color: var(--text-secondary); font-size: 13px;">80-100g</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Critical Health Rules -->
+        <article class="card" style="--delay: 7">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #FF2D55, #FF375F);">
+                    <i class="fas fa-exclamation-triangle" style="color: white;"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Critical Health Rules</h3>
+                    <p class="card-subtitle">Non-negotiable guidelines for diabetes & heart health</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+                <div style="padding: 14px; background: linear-gradient(135deg, rgba(255, 59, 48, 0.03), rgba(255, 59, 48, 0.08)); border-radius: 10px; border-left: 4px solid var(--system-red); transition: all 0.2s ease;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-bread-slice" style="color: var(--system-red); font-size: 20px;"></i>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary);">Paratha</strong>
+                            <p style="margin: 2px 0; font-size: 13px; color: var(--text-secondary);">Maximum 1.5 pieces
+                                per meal</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 14px; background: linear-gradient(135deg, rgba(52, 199, 89, 0.03), rgba(52, 199, 89, 0.08)); border-radius: 10px; border-left: 4px solid var(--system-green);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-carrot" style="color: var(--system-green); font-size: 20px;"></i>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary);">Vegetables</strong>
+                            <p style="margin: 2px 0; font-size: 13px; color: var(--text-secondary);">1 cup per meal</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 14px; background: linear-gradient(135deg, rgba(0, 122, 255, 0.03), rgba(0, 122, 255, 0.08)); border-radius: 10px; border-left: 4px solid var(--system-blue);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-fish" style="color: var(--system-blue); font-size: 20px;"></i>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary);">Fish/Chicken</strong>
+                            <p style="margin: 2px 0; font-size: 13px; color: var(--text-secondary);">80-100g cooked</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 14px; background: linear-gradient(135deg, rgba(175, 82, 222, 0.03), rgba(175, 82, 222, 0.08)); border-radius: 10px; border-left: 4px solid var(--system-purple);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-drumstick-bite" style="color: var(--system-purple); font-size: 20px;"></i>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary);">Mutton</strong>
+                            <p style="margin: 2px 0; font-size: 13px; color: var(--text-secondary);">60-70g cooked
+                                portion</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 14px; background: linear-gradient(135deg, rgba(255, 204, 0, 0.03), rgba(255, 204, 0, 0.08)); border-radius: 10px; border-left: 4px solid var(--system-yellow);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-egg" style="color: #C7A000; font-size: 20px;"></i>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary);">Eggs</strong>
+                            <p style="margin: 2px 0; font-size: 13px; color: var(--text-secondary);">1-2 per serving</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 14px; background: linear-gradient(135deg, rgba(90, 200, 250, 0.03), rgba(90, 200, 250, 0.08)); border-radius: 10px; border-left: 4px solid var(--system-teal);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-blender" style="color: var(--system-teal); font-size: 20px;"></i>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary);">Raita/Chaach</strong>
+                            <p style="margin: 2px 0; font-size: 13px; color: var(--text-secondary);">Accompaniments, not
+                                vegetables</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 14px; background: linear-gradient(135deg, rgba(255, 59, 48, 0.03), rgba(255, 59, 48, 0.08)); border-radius: 10px; border-left: 4px solid var(--system-red);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-layer-group" style="color: var(--system-red); font-size: 20px;"></i>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary);">Salt Stacking</strong>
+                            <p style="margin: 2px 0; font-size: 13px; color: var(--text-secondary);">Avoid papad +
+                                boondi raita</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 14px; background: linear-gradient(135deg, rgba(255, 149, 0, 0.03), rgba(255, 149, 0, 0.08)); border-radius: 10px; border-left: 4px solid var(--system-orange);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-seedling" style="color: var(--system-orange); font-size: 20px;"></i>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary);">Potato Rule</strong>
+                            <p style="margin: 2px 0; font-size: 13px; color: var(--text-secondary);">Minimal, with
+                                high-fiber veggies</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 14px; background: linear-gradient(135deg, rgba(52, 199, 89, 0.03), rgba(52, 199, 89, 0.08)); border-radius: 10px; border-left: 4px solid var(--system-green);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-salad" style="color: var(--system-green); font-size: 20px;"></i>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary);">Mandatory Salad</strong>
+                            <p style="margin: 2px 0; font-size: 13px; color: var(--text-secondary);">Minimum 1.5 cups
+                                for fiber</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="fab-container">
+    <button class="fab" onclick="scrollToTop()" aria-label="Scroll to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+</div>
+
+<!-- Search Modal -->
+<div class="search-container" id="searchModal">
+    <div class="search-modal">
+        <div class="search-input-container">
+            <input type="text" class="search-input" id="searchInput"
+                   placeholder="Search for dal, paratha, chicken, vegetables..." aria-label="Search">
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+</div>
+
+<script>
+    // Embedded Meal Plan Data
+    const mealPlanData = {
+        day1: {
+            name: "Monday",
+            meals: [
+                { time: "8:30 AM", type: "Early Morning", menu: "Warm jeera-dhania water", notes: "Metabolism boost" },
+                { time: "10:00 AM", type: "Breakfast", isPrimary: true, menu: "<strong>Main:</strong> Aloo Paratha (1.5) with Plain dahi<br><strong>Beverage:</strong> Indian tea (less sugar)", notes: "Use minimal oil" },
+                { time: "12:30 PM", type: "Mid-day Snack", menu: "<strong>Nuts:</strong> Soaked almonds (5) + walnuts (2-3)<br><strong>Fruit:</strong> Seasonal choice<br>• Summer: Watermelon<br>• Winter: Guava<br>• Monsoon: Pear", notes: "Heart & brain health" },
+                { time: "2:30 PM", type: "Lunch", isPrimary: true, menu: "<strong>Dal:</strong> Arhar dal<br><strong>Vegetable (choose 1):</strong><br>• Lauki-chana dal<br>• Bhindi (dry, simple)<br>• Aloo-gobhi (minimal aloo)<br><strong>Carb:</strong> Roti (2) OR Rice (0.5 cup)<br><strong>Salad:</strong> Large kachumber (1.5 cups)", notes: "Dahi + green chutney" },
+                { time: "6:15 PM", type: "Evening", menu: "<strong>Snack:</strong> Roasted chana (handful)<br><strong>Beverage:</strong> Indian tea", notes: "Healthy protein" },
+                { time: "9:00 PM", type: "Dinner", isPrimary: true, menu: "<strong>Option 1:</strong> Moong dal + Palak sabzi + Roti (2)<br><strong>Option 2:</strong> Chana dal + Tori + Roti (2)<br><strong>Option 3:</strong> Masoor dal + Karela-pyaz + Roti (2)", notes: "No rice at dinner" }
+            ]
+        },
+        day2: {
+            name: "Tuesday",
+            meals: [
+                { time: "8:30 AM", type: "Early Morning", menu: "Warm lemon water + kala namak", notes: "Detox" },
+                { time: "10:00 AM", type: "Breakfast", isPrimary: true, menu: "<strong>Main:</strong> Rava Idli (3-4) with Peanut chutney<br><strong>Beverage:</strong> Indian tea", notes: "" },
+                { time: "12:30 PM", type: "Mid-day Snack", menu: "<strong>Nuts:</strong> Soaked almonds (5) + pistachios (8-10)<br><strong>Fruit:</strong> Seasonal choice<br>• Summer: Muskmelon<br>• Winter: Orange<br>• Monsoon: Apple", notes: "Blood sugar friendly" },
+                { time: "2:30 PM", type: "Lunch", isPrimary: true, menu: "<strong>Dal:</strong> Masoor dal<br><strong>Vegetable (choose 1):</strong><br>• Kaddu ki sabzi (pumpkin)<br>• Baingan bharta<br>• Parwal sabzi (no aloo)<br><strong>Carb:</strong> Roti (2) OR Rice (0.5 cup)", notes: "Cucumber raita + green chutney" },
+                { time: "6:15 PM", type: "Evening", menu: "<strong>Snack:</strong> Makhana (roasted, handful)<br><strong>Beverage:</strong> Indian tea", notes: "Light & healthy" },
+                { time: "9:00 PM", type: "Dinner", isPrimary: true, menu: "<strong>Option 1:</strong> Mutton/Chicken curry (80-100g) + Roti (2)<br><strong>Option 2:</strong> Chana dal + Nenua sabzi + Roti (2)<br><strong>Option 3:</strong> Masoor dal + Gajar-matar + Roti (2)", notes: "Cucumber-tomato salad + Plain dahi" }
+            ]
+        },
+        day3: {
+            name: "Wednesday",
+            meals: [
+                { time: "8:30 AM", type: "Early Morning", menu: "Methi water (soaked overnight)", notes: "Diabetes control" },
+                { time: "10:00 AM", type: "Breakfast", isPrimary: true, menu: "<strong>Main:</strong> Mooli Paratha (1.5) with Dahi<br><strong>Beverage:</strong> Indian tea", notes: "Vegetable-stuffed" },
+                { time: "12:30 PM", type: "Mid-day Snack", menu: "<strong>Nuts:</strong> Soaked almonds (5) + roasted makhana<br><strong>Fruit:</strong> Seasonal choice<br>• Summer: Small mango slice<br>• Winter: Apple<br>• Monsoon: Jamun", notes: "Low calorie combo" },
+                { time: "2:30 PM", type: "Lunch", isPrimary: true, menu: "<strong>Dal:</strong> Kala chana<br><strong>Vegetable (choose 1):</strong><br>• Lauki sabzi<br>• Aloo-pyaz (minimal aloo)<br>• Sem ki phali<br><strong>Carb:</strong> Roti (2) OR Rice (0.5 cup)", notes: "Green salad + Mint raita + green chutney" },
+                { time: "6:15 PM", type: "Evening", menu: "<strong>Snack:</strong> Sprouts chaat (small bowl)<br><strong>Beverage:</strong> Indian tea", notes: "Protein-rich" },
+                { time: "9:00 PM", type: "Dinner", isPrimary: true, menu: "<strong>Option 1:</strong> Moong dal + Bhindi do pyaza + Roti (2)<br><strong>Option 2:</strong> Masoor dal + Palak sabzi + Roti (2)<br><strong>Option 3:</strong> Arhar dal + Tori-pyaz + Roti (2)", notes: "Large onion-green chilli salad + Chaach" }
+            ]
+        },
+        day4: {
+            name: "Thursday",
+            meals: [
+                { time: "8:30 AM", type: "Early Morning", menu: "Plain warm water + cinnamon", notes: "Blood sugar control" },
+                { time: "10:00 AM", type: "Breakfast", isPrimary: true, menu: "<strong>Main:</strong> Sattu Paratha (1.5) with Dahi<br><strong>Beverage:</strong> Indian tea", notes: "Traditional, nutritious" },
+                { time: "12:30 PM", type: "Mid-day Snack", menu: "<strong>Nuts:</strong> Soaked almonds (5) + cashews (3-4)<br><strong>Fruit:</strong> Seasonal choice<br>• Summer: Watermelon<br>• Winter: Pomegranate<br>• Monsoon: Pear", notes: "Energy boost" },
+                { time: "2:30 PM", type: "Lunch", isPrimary: true, menu: "<strong>Dal:</strong> Arhar dal<br><strong>Vegetable (choose 1):</strong><br>• Aloo-tamatar (minimal aloo)<br>• Beans-gajar (no potato)<br>• Karela-pyaz (tawa-bhunao style)<br><strong>Carb:</strong> Roti (2) OR Rice (0.5 cup)", notes: "Mooli-pyaz salad + Plain dahi + green chutney" },
+                { time: "6:15 PM", type: "Evening", menu: "<strong>Snack:</strong> Roasted peanuts (small handful)<br><strong>Beverage:</strong> Indian tea", notes: "Natural protein" },
+                { time: "9:00 PM", type: "Dinner", isPrimary: true, menu: "<strong>Option 1:</strong> Fish curry (80-100g) + Roti (2)<br><strong>Option 2:</strong> Urad dal + Gobhi matar + Roti (2)<br><strong>Option 3:</strong> Dal fry + Parwal bhujia + Roti (2)", notes: "Salad + Plain dahi" }
+            ]
+        },
+        day5: {
+            name: "Friday",
+            meals: [
+                { time: "8:30 AM", type: "Early Morning", menu: "Jeera-ajwain water", notes: "Digestive aid" },
+                { time: "10:00 AM", type: "Breakfast", isPrimary: true, menu: "<strong>Main:</strong> Pyaz Paratha (1.5) with Dahi<br><strong>Beverage:</strong> Indian tea", notes: "Flavorful start" },
+                { time: "12:30 PM", type: "Mid-day Snack", menu: "<strong>Nuts:</strong> Soaked almonds (5) + walnuts (2-3)<br><strong>Fruit:</strong> Seasonal choice<br>• Summer: Cucumber<br>• Winter: Papaya<br>• Monsoon: Peach", notes: "Omega-3 rich" },
+                { time: "2:30 PM", type: "Lunch", isPrimary: true, menu: "<strong>Dal:</strong> Mixed dal / Arhar dal / Moong dal<br><strong>Vegetable (choose 1):</strong><br>• Sem ki phali (beans only)<br>• Bhindi (tawa-roasted)<br>• Palak sabzi (plain)<br><strong>Carb:</strong> Roti (2) OR Rice (0.5 cup)", notes: "Kachumber salad + Mixed veg raita + green chutney" },
+                { time: "6:15 PM", type: "Evening", menu: "<strong>Snack:</strong> Murmura mix (homemade) OR Chaach<br><strong>Beverage:</strong> Indian tea", notes: "Friday special" },
+                { time: "9:00 PM", type: "Dinner", isPrimary: true, menu: "<strong>Option 1:</strong> Egg curry + Roti (2)<br><strong>Option 2:</strong> Masoor dal + Nenua sabzi + Roti (2)<br><strong>Option 3:</strong> Kadhi + Roti (2)", notes: "Large salad + Plain dahi" }
+            ]
+        },
+        day6: {
+            name: "Saturday",
+            meals: [
+                { time: "8:30 AM", type: "Early Morning", menu: "Warm water with soaked methi seeds", notes: "Weekend detox" },
+                { time: "10:00 AM", type: "Breakfast", isPrimary: true, menu: "<strong>Main:</strong> Poha with peanuts & vegetables (no sev)<br><strong>Beverage:</strong> Indian tea", notes: "Light & nutritious" },
+                { time: "12:30 PM", type: "Mid-day Snack", menu: "<strong>Nuts:</strong> Soaked almonds (5) + peanuts<br><strong>Fruit:</strong> Seasonal choice<br>• Summer: Watermelon<br>• Winter: Guava<br>• Monsoon: Jamun", notes: "Affordable protein" },
+                { time: "2:30 PM", type: "Lunch", isPrimary: true, menu: "<strong>Option 1:</strong> Chole + Roti (2) OR Rice (0.5 cup)<br><strong>Option 2:</strong> Rajma + Roti (2) OR Rice (0.5 cup)<br><strong>Option 3:</strong> Arhar dal + vegetable + Roti (2) OR Rice (0.5 cup)<br><strong>If dal, choose vegetable:</strong><br>• Gajar-gobhi-matar<br>• Karela (tawa-roasted)<br>• Lauki sabzi", notes: "Onion-tomato salad (1.5 cups) + Plain dahi + green chutney" },
+                { time: "6:15 PM", type: "Evening", menu: "<strong>Snack:</strong> Roasted chana dal (2 tbsp)<br><strong>Beverage:</strong> Indian tea", notes: "Crunchy protein" },
+                { time: "9:00 PM", type: "Dinner", isPrimary: true, menu: "<strong>Option 1:</strong> Paneer (simple, limited) + Roti (2)<br><strong>Option 2:</strong> Moong dal + Tori-pyaz + Roti (2)<br><strong>Option 3:</strong> Kadhi + Roti (2)", notes: "Green salad + Dahi or Chaach" }
+            ]
+        },
+        day7: {
+            name: "Sunday",
+            meals: [
+                { time: "8:30 AM", type: "Early Morning", menu: "Jeera water", notes: "Prep for heavier breakfast" },
+                { time: "10:00 AM", type: "Breakfast", isPrimary: true, menu: "<strong>Special Breakfast:</strong><br>• Puri (2 small) with Aloo-matar sabzi<br>• Tiny halwa (1 tsp only)<br>• Indian tea", notes: "Weekly indulgence" },
+                { time: "12:30 PM", type: "Mid-day Snack", menu: "<strong>Soaked almonds (5) + mixed nuts + Any fruit</strong>", notes: "Sunday special" },
+                { time: "2:30 PM", type: "Lunch", isPrimary: true, menu: "<strong>Option 1:</strong> Mutton/Chicken Biryani (0.5 cup) with raita<br><strong>Option 2:</strong> Arhar dal + seasonal sabzi + Roti (2) OR Rice (0.5 cup)<br><strong>Option 3:</strong> Mixed vegetable curry + Roti (2)<br><strong>If option 2/3, choose vegetable:</strong><br>• Beans-gajar<br>• Bhindi masala<br>• Kaddu sabzi", notes: "<strong>With biryani:</strong> Boondi raita + Large salad<br><strong>With dal/veg:</strong> Sunday salad + Plain dahi + Green chutney" },
+                { time: "6:15 PM", type: "Evening", menu: "<strong>Snack:</strong> Roasted makhana<br><strong>Beverage:</strong> Indian tea", notes: "Light after heavy day" },
+                { time: "9:00 PM", type: "Dinner", isPrimary: true, menu: "<strong>Option 1:</strong> Dal fry + Palak sabzi + Roti (2)<br><strong>Option 2:</strong> Kadhi + Roti (2)<br><strong>Option 3:</strong> Paneer (limited) + Roti (2)", notes: "Simple salad + Plain dahi" }
+            ]
+        }
+    };
+
+    // Advanced Loading State
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('loader').classList.add('fade-out');
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+            }, 600);
+        }, 1500);
+    });
+
+    // Intersection Observer for animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animationPlayState = 'running';
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.card').forEach(card => {
+        card.style.animationPlayState = 'paused';
+        observer.observe(card);
+    });
+
+    // Tab Navigation with keyboard support
+    let currentDay = 1;
+
+    function showDay(day) {
+        currentDay = day;
+
+        // Update tabs
+        document.querySelectorAll('.tab-button').forEach((btn, index) => {
+            const isActive = index + 1 === day;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-selected', isActive);
+        });
+
+        // Save to localStorage
+        localStorage.setItem('selectedDay', day);
+
+        // Get day data
+        const dayKey = `day${day}`;
+        const dayData = mealPlanData[dayKey];
+
+        // Animate content change
+        const content = document.getElementById('day-content');
+        content.style.opacity = '0';
+        content.style.transform = 'translateY(20px)';
+
+        setTimeout(() => {
+            // Update the day plan section while keeping other sections
+            const dayPlanCard = document.querySelector('.card:first-child');
+            if (dayPlanCard && dayData) {
+                // Update the header
+                dayPlanCard.querySelector('.card-title h3').textContent = `${dayData.name} Menu`;
+
+                // Update the table body
+                const tbody = dayPlanCard.querySelector('.meal-table tbody');
+                if (tbody) {
+                    let html = '';
+                    dayData.meals.forEach(meal => {
+                        const isPrimary = meal.isPrimary ? ' primary' : '';
+                        html += `
+                            <tr>
+                                <td><span class="time-badge"><i class="fas fa-clock"></i> ${meal.time}</span></td>
+                                <td><span class="meal-type-badge${isPrimary}">${meal.type}</span></td>
+                                <td>${meal.menu}</td>
+                                <td>${meal.notes}</td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = html;
+                }
+            }
+
+            content.style.opacity = '1';
+            content.style.transform = 'translateY(0)';
+
+            // Re-observe cards for animations
+            document.querySelectorAll('.card').forEach(card => {
+                card.style.animationPlayState = 'paused';
+                observer.observe(card);
+            });
+        }, 300);
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' && currentDay > 1) {
+            showDay(currentDay - 1);
+        } else if (e.key === 'ArrowRight' && currentDay < 7) {
+            showDay(currentDay + 1);
+        } else if (e.key === 'Escape') {
+            closeSearch();
+        } else if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            toggleSearch();
+        }
+    });
+
+    // Search input keyboard support
+    document.getElementById('searchInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const firstResult = document.querySelector('.search-result-item');
+            if (firstResult) {
+                firstResult.click();
+            }
+        }
+    });
+
+    // Search functionality
+    function toggleSearch() {
+        const modal = document.getElementById('searchModal');
+        const input = document.getElementById('searchInput');
+        const isActive = modal.classList.contains('active');
+
+        if (isActive) {
+            closeSearch();
+        } else {
+            modal.classList.add('active');
+            setTimeout(() => input.focus(), 100);
+        }
+    }
+
+    function closeSearch() {
+        const modal = document.getElementById('searchModal');
+        modal.classList.remove('active');
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchResults').innerHTML = '';
+    }
+
+    // Search through meal plan data
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        if (query.length < 2) {
+            document.getElementById('searchResults').innerHTML = '';
+            return;
+        }
+
+        const results = [];
+
+        // Search through all days and meals
+        Object.keys(mealPlanData).forEach(dayKey => {
+            const day = mealPlanData[dayKey];
+            const dayName = day.name;
+
+            // Check if searching for entire day
+            if (dayName.toLowerCase().includes(query)) {
+                // Add all meals for this day
+                day.meals.forEach(meal => {
+                    const menuText = meal.menu.replace(/<[^>]*>/g, ''); // Remove HTML tags
+                    results.push({
+                        day: dayName,
+                        dayNumber: dayKey.replace('day', ''),
+                        meal: meal.type,
+                        time: meal.time,
+                        menu: menuText,
+                        relevance: 10 // Higher relevance for day matches
+                    });
+                });
+            } else {
+                // Search individual meals
+                day.meals.forEach(meal => {
+                    const mealText = `${meal.menu} ${meal.type} ${meal.notes}`.toLowerCase();
+                    const menuText = meal.menu.replace(/<[^>]*>/g, ''); // Remove HTML tags
+
+                    if (mealText.includes(query)) {
+                        results.push({
+                            day: dayName,
+                            dayNumber: dayKey.replace('day', ''),
+                            meal: meal.type,
+                            time: meal.time,
+                            menu: menuText,
+                            relevance: mealText.split(query).length - 1
+                        });
+                    }
+                });
+            }
+        });
+
+        // Sort by relevance (number of matches)
+        results.sort((a, b) => b.relevance - a.relevance);
+
+        const resultsHtml = results.slice(0, 8).map(result => `
+            <div class="search-result-item" onclick="navigateToResult(${result.dayNumber}, '${result.time}')">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-calendar-day" style="color: var(--primary); font-size: 16px;"></i>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">
+                            ${result.day} - ${result.meal}
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 2px;">
+                            ${result.time}
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-tertiary); line-height: 1.4;">
+                            ${result.menu.substring(0, 100)}${result.menu.length > 100 ? '...' : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('searchResults').innerHTML = resultsHtml ||
+            '<div style="padding: 20px; text-align: center; color: var(--text-tertiary);">No results found</div>';
+    });
+
+    // Navigate to search result
+    function navigateToResult(dayNumber, mealTime = null) {
+        showDay(parseInt(dayNumber));
+        closeSearch();
+
+        // If specific meal time provided, scroll to that row
+        if (mealTime) {
+            setTimeout(() => {
+                scrollToMealRow(mealTime);
+            }, 400); // Wait for day transition animation
+        }
+    }
+
+    // Scroll to specific meal row by time
+    function scrollToMealRow(mealTime) {
+        // Find the table row with matching time
+        const timeElements = document.querySelectorAll('.time-badge');
+        let targetRow = null;
+
+        timeElements.forEach(element => {
+            if (element.textContent.includes(mealTime)) {
+                targetRow = element.closest('tr');
+            }
+        });
+
+        if (targetRow) {
+            targetRow.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+
+            // Add a temporary focus effect
+            targetRow.style.transition = 'background-color 0.3s ease';
+            targetRow.style.backgroundColor = 'rgba(0, 122, 255, 0.1)';
+
+            setTimeout(() => {
+                targetRow.style.backgroundColor = '';
+            }, 2000);
+        }
+    }
+
+    // Close search when clicking outside modal
+    document.getElementById('searchModal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            closeSearch();
+        }
+    });
+
+
+    // Smooth scroll to top
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    // Haptic feedback simulation for mobile
+    function triggerHaptic() {
+        if (navigator.vibrate) {
+            navigator.vibrate(10);
+        }
+    }
+
+    // Add haptic feedback to buttons
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', triggerHaptic);
+    });
+
+    // Restore last selected day
+    const savedDay = localStorage.getItem('selectedDay');
+    if (savedDay) {
+        showDay(parseInt(savedDay));
+    }
+
+    // Performance monitoring
+    if ('PerformanceObserver' in window) {
+        const perfObserver = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+                console.log(`${entry.name}: ${entry.duration}ms`);
+            }
+        });
+        perfObserver.observe({ entryTypes: ['measure'] });
+    }
+
+    // Service Worker for offline support (optional)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+</script>
+</body>
+</html>
